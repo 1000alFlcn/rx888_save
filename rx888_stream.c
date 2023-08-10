@@ -1,6 +1,6 @@
 /*
+Copyright (c) 2023 Peter de Wit
 
-Copyright (c)  2021 Ruslan Migirov <trapi78@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Copyright (c)  2021 Ruslan Migirov <trapi78@gmail.com>
 
 */
 
@@ -43,6 +45,7 @@ unsigned int reqsize = 8;     // Request size in number of packets
 unsigned int duration = 100;  // Duration of the test in seconds
 
 const char *firmware = NULL;
+const char *filename = NULL;
 
 static unsigned int ep = 1 | LIBUSB_ENDPOINT_IN;
 
@@ -75,18 +78,8 @@ static void transfer_callback(struct libusb_transfer *transfer) {
 	   bytes.\n",
                 libusb_error_name(transfer->status), transfer->actual_length);
     } else {
-        size = transfer->actual_length;
-        success_count++;
-        uint16_t *samples = (uint16_t *)transfer->buffer;
-        if (randomizer) {
-            for (int i = 0; i < size / 2; i++) {
-                samples[i] ^= 0xfffe * (samples[i] & 1);
-            }
-        }
-        ret = write(STDOUT_FILENO, transfer->buffer, transfer->actual_length);
-        if (ret < 0) {
-            fprintf(stderr, "Error writing to stdout: %s", strerror(errno));
-        }
+// transfer here
+// file: filename
     }
     if (!stop_transfers) {
         if (libusb_submit_transfer(transfer) == 0)
@@ -129,6 +122,7 @@ static void sig_stop(int signum) {
 static void printhelp(void) {
     fprintf(stderr, " --verbose, -v      Verbose output\n");
     fprintf(stderr, " --firmware, -f     Firmware file\n");
+    fprintf(stderr, " --out, -o          Output file\n");
     fprintf(stderr, " --dither, -d       Enable dithering\n");
     fprintf(stderr, " --rand, -r         Enable output randomization\n");
     fprintf(stderr, " --samplerate, -s   Sample Rate, default 32000000\n");
@@ -150,6 +144,7 @@ int main(int argc, char **argv) {
         static struct option long_options[] = {
             {"verbose", optional_argument, &verbose, 1},
             {"firmware", required_argument, &has_firmware, 'f'},
+	    {"output", required_argument, 0, 'o'},
             {"dither", no_argument, &dither, 'd'},
             {"rand", no_argument, &randomizer, 'r'},
             {"samplerate", required_argument, 0, 's'},
@@ -179,6 +174,10 @@ int main(int argc, char **argv) {
 
         case 'f':
             firmware = optarg;
+            break;
+		
+	case 'o':
+            filename = optarg;
             break;
 
         case 'r':

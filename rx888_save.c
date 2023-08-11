@@ -42,7 +42,7 @@ Copyright (c)  2021 Ruslan Migirov <trapi78@gmail.com>
 
 unsigned int queuedepth = 16; // Number of requests to queue
 unsigned int reqsize = 8;     // Request size in number of packets
-unsigned int duration = 100;  // Duration of the test in seconds
+// Duration of the test in seconds
 
 const char *firmware = NULL;
 const char *filename = NULL;
